@@ -1,8 +1,8 @@
-import type { NightclawConfig } from "../config/index.js";
+import type { LlmConfig } from "../config/index.js";
 
 export async function callLlmStreaming(
   prompt: string,
-  config: NightclawConfig,
+  config: LlmConfig,
 ): Promise<string> {
   const baseUrl = config.baseUrl.replace(/\/+$/, "");
   const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -28,7 +28,9 @@ export async function callLlmStreaming(
     const data = (await response.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
     };
-    return data.choices?.[0]?.message?.content?.trim() || "(No response content)";
+    return (
+      data.choices?.[0]?.message?.content?.trim() || "(No response content)"
+    );
   }
 
   const reader = response.body.getReader();

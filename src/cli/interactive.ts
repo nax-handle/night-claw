@@ -1,29 +1,61 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import type { NightclawConfig } from "../config/index.js";
+import { readConfig } from "../config/index.js";
 import { runPrompt } from "../agent/index.js";
+import { getCommand } from "./commands/index.js";
+import { mascot } from "../ui/mascot.js";
+import { colors as c } from "../ui/colors.js";
 
-export async function runInteractive(config: NightclawConfig): Promise<void> {
+export async function runInteractive(): Promise<void> {
   const rl = createInterface({ input, output });
 
-  console.log("Nightclaw interactive mode");
-  console.log('Type a prompt, or "exit" to quit.');
-  console.log(`Using model: ${config.model}`);
+  console.log(`\n${mascot}\n`);
+  console.log(`${c.bold}nightclaw${c.reset} ${c.dim}interactive mode${c.reset}`);
+  console.log(
+    `${c.dim}Type /help for commands, or just start chatting.${c.reset}\n`,
+  );
 
   while (true) {
-    const line = await rl.question("nightclaw> ");
+    const line = await rl.question(`${c.cyan}nightclaw>${c.reset} `);
     const userInput = line.trim();
     if (!userInput) continue;
     if (userInput.toLowerCase() === "exit") break;
 
+    if (userInput.startsWith("/")) {
+      const parts = userInput.slice(1).split(/\s+/);
+      const cmdName = parts[0];
+      const cmdArgs = parts.slice(1);
+      const cmd = getCommand(cmdName);
+
+      if (cmd) {
+        try {
+          await cmd.run(cmdArgs, rl);
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          console.error(`${c.red}[error] ${msg}${c.reset}`);
+        }
+      } else {
+        console.log(`${c.red}Unknown command: /${cmdName}${c.reset}`);
+        console.log(`${c.dim}Type /help for available commands.${c.reset}`);
+      }
+      continue;
+    }
+
     try {
+      const config = await readConfig();
+      if (!config) {
+        console.log(
+          `${c.yellow}No config found. Run /setup to get started.${c.reset}`,
+        );
+        continue;
+      }
       await runPrompt(userInput, config);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`[nightclaw] ${message}`);
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(`${c.red}[error] ${msg}${c.reset}`);
     }
   }
 
   rl.close();
-  console.log("Goodbye from nightclaw.");
+  console.log(`\n${c.dim}Goodbye from nightclaw.${c.reset}`);
 }

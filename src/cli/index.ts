@@ -1,19 +1,14 @@
+import { createInterface } from "node:readline/promises";
+import { stdin as input, stdout as output } from "node:process";
 import { readConfig } from "../config/index.js";
 import { runPrompt } from "../agent/index.js";
-import { printHelp } from "./help.js";
-import { runSetupWizard, createProjectConfigTemplate } from "./setup.js";
 import { runInteractive } from "./interactive.js";
-
-async function getOrCreateConfig() {
-  const config = await readConfig();
-  if (config) return config;
-  console.log("No config found. Starting setup...");
-  return runSetupWizard();
-}
+import { getCommand } from "./commands/index.js";
+import { colors as c } from "../ui/colors.js";
 
 function handleError(error: unknown): never {
   const message = error instanceof Error ? error.message : String(error);
-  console.error(`[nightclaw] ${message}`);
+  console.error(`${c.red}[nightclaw] ${message}${c.reset}`);
   process.exit(1);
 }
 
@@ -22,31 +17,24 @@ export async function run(argv: string[]): Promise<void> {
   const firstArg = args[0];
 
   if (firstArg === "--help" || firstArg === "-h") {
-    printHelp();
-    return;
-  }
-
-  if (firstArg === "setup") {
-    try {
-      await runSetupWizard();
-    } catch (error) {
-      handleError(error);
-    }
-    return;
-  }
-
-  if (firstArg === "init-config") {
-    try {
-      await createProjectConfigTemplate();
-    } catch (error) {
-      handleError(error);
+    const help = getCommand("help");
+    if (help) {
+      const rl = createInterface({ input, output });
+      await help.run([], rl);
+      rl.close();
     }
     return;
   }
 
   if (args.length > 0) {
     try {
-      const config = await getOrCreateConfig();
+      const config = await readConfig();
+      if (!config) {
+        console.log(
+          `${c.yellow}No config found. Run: nightclaw then /setup${c.reset}`,
+        );
+        process.exit(1);
+      }
       await runPrompt(args.join(" "), config);
     } catch (error) {
       handleError(error);
@@ -55,8 +43,7 @@ export async function run(argv: string[]): Promise<void> {
   }
 
   try {
-    const config = await getOrCreateConfig();
-    await runInteractive(config);
+    await runInteractive();
   } catch (error) {
     handleError(error);
   }

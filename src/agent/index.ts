@@ -5,10 +5,10 @@ export async function runPrompt(
   prompt: string,
   config: NightclawConfig,
 ): Promise<void> {
-  console.log(`[nightclaw] model: ${config.model}`);
+  console.log(`[nightclaw] model: ${config.llm.model}`);
   process.stdout.write("\n");
 
-  const answer = await callLlmStreaming(prompt, config);
+  const answer = await callLlmStreaming(prompt, config.llm);
   if (answer === "(No response content)") {
     process.stdout.write(answer);
   }
