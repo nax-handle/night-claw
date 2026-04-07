@@ -1,10 +1,10 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { readConfig } from "../config/index.js";
-import { runPrompt } from "../agent/index.js";
-import { runInteractive } from "./interactive.js";
-import { getCommand } from "./commands/index.js";
-import { colors as c } from "../ui/colors.js";
+import { readConfig } from "../config";
+import { runPrompt } from "../agent";
+import { runInteractive } from "./interactive";
+import { getCommand } from "./commands/index";
+import { colors as c } from "../ui/colors";
 
 function handleError(error: unknown): never {
   const message = error instanceof Error ? error.message : String(error);

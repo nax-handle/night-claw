@@ -15,7 +15,7 @@ registerCommand({
       );
     }
     console.log(
-      `\n  Type anything else to chat with the AI.\n  Type ${c.cyan}exit${c.reset} to quit.\n`,
+      `\n  Type anything else to chat with the AI.\n  Type ${c.cyan}/exit${c.reset} to quit.\n`,
     );
   },
 });

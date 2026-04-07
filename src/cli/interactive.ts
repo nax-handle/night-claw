@@ -1,10 +1,10 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { readConfig } from "../config/index.js";
-import { runPrompt } from "../agent/index.js";
-import { getCommand } from "./commands/index.js";
-import { mascot } from "../ui/mascot.js";
-import { colors as c } from "../ui/colors.js";
+import { readConfig } from "../config";
+import { runPrompt } from "../agent";
+import { getCommand } from "./commands";
+import { mascot } from "../ui/mascot";
+import { colors as c } from "../ui/colors";
 
 export async function runInteractive(): Promise<void> {
   const rl = createInterface({ input, output });
@@ -19,7 +19,7 @@ export async function runInteractive(): Promise<void> {
     const line = await rl.question(`${c.cyan}nightclaw>${c.reset} `);
     const userInput = line.trim();
     if (!userInput) continue;
-    if (userInput.toLowerCase() === "exit") break;
+    if (userInput.startsWith("/exit")) break;
 
     if (userInput.startsWith("/")) {
       const parts = userInput.slice(1).split(/\s+/);

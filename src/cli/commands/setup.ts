@@ -1,6 +1,7 @@
 import { registerCommand } from "./index.js";
 import { getSetupModule, getAllSetupModules } from "../setup/index.js";
 import { colors as c } from "../../ui/colors.js";
+import { selectWithArrows } from "../components/select.js";
 
 registerCommand({
   name: "setup",
@@ -21,24 +22,19 @@ registerCommand({
     }
 
     const modules = getAllSetupModules();
-    console.log(`\n${c.bold}Setup - choose a section:${c.reset}\n`);
-    modules.forEach((mod, i) => {
-      console.log(
-        `  ${c.cyan}${i + 1}${c.reset}) ${mod.name} ${c.dim}- ${mod.description}${c.reset}`,
-      );
-    });
-    console.log("");
+    const selected = await selectWithArrows(
+      rl,
+      "Setup - choose a section:",
+      modules.map((mod) => ({
+        value: mod,
+        label: `${mod.name} ${c.dim}- ${mod.description}${c.reset}`,
+      })),
+    );
 
-    const choice = (
-      await rl.question(`${c.bold}Select (1-${modules.length}): ${c.reset}`)
-    ).trim();
-
-    const idx = parseInt(choice, 10) - 1;
-    if (isNaN(idx) || idx < 0 || idx >= modules.length) {
-      console.log(`${c.red}Invalid choice.${c.reset}`);
+    if (!selected) {
+      console.log(`${c.red}No setup module selected.${c.reset}`);
       return;
     }
-
-    await modules[idx].run(rl);
+    await selected.run(rl);
   },
 });
