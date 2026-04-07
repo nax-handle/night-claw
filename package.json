@@ -1,0 +1,24 @@
+{
+  "name": "nightclaw",
+  "version": "0.1.0",
+  "description": "Simple AI agent style CLI",
+  "private": true,
+  "bin": {
+    "nightclaw": "./bin/nightclaw.js",
+    "nigthclaw": "./bin/nightclaw.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "npm run build && node ./dist/nightclaw.js",
+    "dev": "tsx ./src/nightclaw.ts",
+    "test": "node -e \"console.log('No tests yet')\""
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
