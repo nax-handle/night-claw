@@ -1,38 +1,71 @@
-# 🌙nightclaw
+# nightclaw
 
 Simple AI agent style CLI.
 
-## Run
+## Quick Start
+
+Install dependencies and build:
 
 ```bash
-npm start
+npm install
+npm run build
+npm link
 ```
 
-First-time setup:
+Then launch:
 
 ```bash
-nightclaw setup
+nightclaw
 ```
 
-Dev mode (TypeScript, no build output):
+Inside interactive mode:
 
-```bash
-npm run dev
+```text
+/help
+/setup
+/setup llm
 ```
+
+Type any normal text to chat with the model, and `exit` to quit.
+
+## Configuration
+
+Project config is stored in:
+
+```text
+nightclaw.config.json
+```
+
+Current shape:
+
+```json
+{
+  "llm": {
+    "provider": "openai",
+    "apiKey": "your-api-key",
+    "model": "gpt-4.1-mini",
+    "baseUrl": "https://api.openai.com/v1"
+  }
+}
+```
+
+`nightclaw.config.json` is ignored by git.
+
+## Other Commands
 
 Single prompt mode:
 
 ```bash
-npm start -- "build login api"
+nightclaw "build login api"
 ```
 
 Help:
 
 ```bash
-npm start -- --help
+nightclaw --help
 ```
 
-Typos alias supported:
+Typo alias:
 
 ```bash
 nigthclaw --help
