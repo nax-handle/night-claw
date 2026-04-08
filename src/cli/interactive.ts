@@ -10,7 +10,7 @@ export async function runInteractive(): Promise<void> {
   const rl = createInterface({ input, output });
 
   console.log(`\n${mascot}\n`);
-  console.log(`${c.bold}nightclaw${c.reset} ${c.dim}interactive mode${c.reset}`);
+  console.log(`${c.bold}nightclaw${c.reset} ${c.dim}just work at night 🌙🐈‍⬛${c.reset}`);
   console.log(
     `${c.dim}Type /help for commands, or just start chatting.${c.reset}\n`,
   );
