@@ -15,10 +15,18 @@
   },
   "devDependencies": {
     "@types/node": "^24.7.2",
+    "@types/node-telegram-bot-api": "^0.64.14",
+    "@types/qrcode-terminal": "^0.12.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "node-telegram-bot-api": "^0.67.0",
+    "qrcode-terminal": "^0.12.0",
+    "zca-js": "^2.1.2"
   }
 }

@@ -20,4 +20,4 @@ export function getAllSetupModules(): SetupModule[] {
   return [...modules];
 }
 
-import "./llm.js";
+require("./llm.js");

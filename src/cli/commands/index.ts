@@ -20,5 +20,9 @@ export function getAllCommands(): SlashCommand[] {
   return [...commands.values()];
 }
 
-import "./help.js";
-import "./setup.js";
+// Side-effect imports must come after the Map is defined
+// Using require-style dynamic imports avoids the hoisting issue in CommonJS
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require("./help.js");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require("./setup.js");

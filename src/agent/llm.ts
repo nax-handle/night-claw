@@ -1,22 +1,58 @@
 import type { LlmConfig } from "../config/index.js";
+import type { ToolDefinition } from "./tools.js";
 
-export async function callLlmStreaming(
-  prompt: string,
+export type ChatMessage = {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string | null;
+  tool_call_id?: string;
+  tool_calls?: ToolCall[];
+  name?: string;
+};
+
+export type ToolCall = {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+};
+
+export type LlmResponse = {
+  content: string | null;
+  toolCalls: ToolCall[];
+  fullText: string;
+};
+
+export async function callLlm(
+  messages: ChatMessage[],
   config: LlmConfig,
-): Promise<string> {
+  tools?: ToolDefinition[],
+  stream = false,
+): Promise<LlmResponse> {
   const baseUrl = config.baseUrl.replace(/\/+$/, "");
+
+  const body: Record<string, unknown> = {
+    model: config.model,
+    messages,
+    temperature: 0.7,
+    stream,
+  };
+
+  if (tools && tools.length > 0) {
+    body.tools = tools;
+    body.tool_choice = "auto";
+    // Streaming + tools is complex; disable stream when tools present
+    body.stream = false;
+  }
+
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${config.apiKey}`,
     },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      stream: true,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -24,13 +60,29 @@ export async function callLlmStreaming(
     throw new Error(`LLM request failed (${response.status}): ${text}`);
   }
 
+  // Non-streaming (used when tools present or stream=false)
+  if (!body.stream || tools) {
+    const data = (await response.json()) as {
+      choices?: Array<{
+        message?: {
+          content?: string | null;
+          tool_calls?: ToolCall[];
+        };
+      }>;
+    };
+    const msg = data.choices?.[0]?.message;
+    const content = msg?.content ?? null;
+    const toolCalls = msg?.tool_calls ?? [];
+    return { content, toolCalls, fullText: content ?? "" };
+  }
+
+  // Streaming (no tools)
   if (!response.body) {
     const data = (await response.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
     };
-    return (
-      data.choices?.[0]?.message?.content?.trim() || "(No response content)"
-    );
+    const text = data.choices?.[0]?.message?.content?.trim() ?? "";
+    return { content: text, toolCalls: [], fullText: text };
   }
 
   const reader = response.body.getReader();
@@ -49,7 +101,6 @@ export async function callLlmStreaming(
     for (const rawLine of lines) {
       const line = rawLine.trim();
       if (!line.startsWith("data:")) continue;
-
       const data = line.slice(5).trim();
       if (!data || data === "[DONE]") continue;
 
@@ -74,5 +125,20 @@ export async function callLlmStreaming(
     }
   }
 
-  return fullText.trim() || "(No response content)";
+  const text = fullText.trim() || "(No response content)";
+  return { content: text, toolCalls: [], fullText: text };
+}
+
+// Legacy single-prompt streaming call (kept for backward compatibility)
+export async function callLlmStreaming(
+  prompt: string,
+  config: LlmConfig,
+): Promise<string> {
+  const result = await callLlm(
+    [{ role: "user", content: prompt }],
+    config,
+    undefined,
+    true,
+  );
+  return result.fullText;
 }
